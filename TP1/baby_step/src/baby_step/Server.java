@@ -9,6 +9,7 @@ public class Server extends Thread {
 	InputStream in = null;
 	OutputStream out = null;
 	String name = null;
+	String ServerName = "Serveur test";
 
 	public Server(int port) {
 		try {
