@@ -18,6 +18,8 @@ public class Server extends Thread {
 			e.printStackTrace();
 		}
 	}
+	
+	public String getName()
 
 	@Override
 	public void run() {
