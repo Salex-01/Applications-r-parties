@@ -1,19 +1,20 @@
 package baby_step;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-public class Client {
+public class Client extends Thread{
 	
-	char lg_Nom; //Longueur du nom
+	byte lg_Nom; //Longueur du nom
 	String nom;	// Nom du client
 	Socket socServer; // Socket Serveur
 	Socket socClient; // Socket Client
 
-	public Client(String Nom, String serverHost, int serverPort) {
+	public Client(String Nom, InetAddress serverHost, int serverPort) {
 		this.nom=Nom;
-		this.lg_Nom= (char)Nom.length();
+		this.lg_Nom= (byte) Nom.length();
 		
 		//Création socket vers
 		try {
@@ -23,9 +24,13 @@ public class Client {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
 		this.socClient=new Socket();
 		
+		
+	}
+	
+	@Override
+	public void run () {
 		try {
 			socClient.bind(null);
 		} catch (IOException e) {
@@ -38,6 +43,18 @@ public class Client {
 			e.printStackTrace();
 		}
 		
+		try {
+			socServer.getOutputStream().write(lg_Nom);
+			socServer.getOutputStream().write(nom.getBytes());;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		try {
+			System.out.println(new String(socServer.getInputStream().readNBytes(lg_Nom+6)));
+		}catch (IOException e) {
+			e.printStackTrace();
+		}
 		
 	}
 	

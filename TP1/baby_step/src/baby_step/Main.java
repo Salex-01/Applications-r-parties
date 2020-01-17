@@ -9,7 +9,8 @@ public class Main {
 		
 		server.start();
 		
-		client=new Client("test",server.ServerName,11799);
+		client=new Client("test",server.getIP(),11799);
+		client.start();
 		
 	}
 }
