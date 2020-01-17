@@ -18,6 +18,10 @@ public class Server extends Thread {
 			e.printStackTrace();
 		}
 	}
+	
+	public InetAddress getIP() {
+		return s.getInetAddress();
+	}
 
 	@Override
 	public void run() {
