@@ -18,7 +18,7 @@ public class Client extends Thread{
 		
 		//Création socket vers
 		try {
-			this.socServer=new Socket(serverHost,serverPort);
+			this.socServer=new Socket(serverHost,serverPort); //Connexion au serveur
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -33,12 +33,6 @@ public class Client extends Thread{
 	public void run () {
 		try {
 			socClient.bind(null);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		try {
-			this.socClient.connect(socServer.getLocalSocketAddress());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
