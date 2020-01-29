@@ -31,7 +31,6 @@ public class Client extends Thread {
 		try {
 			socServer.getOutputStream().write(lg_Nom); // A modifie en un seul getOutputStream (variable)
 			socServer.getOutputStream().write(nom.getBytes());
-
 			System.out.println(new String(socServer.getInputStream().readNBytes(lg_Nom + 6)));
 		} catch (IOException e) {
 			e.printStackTrace();

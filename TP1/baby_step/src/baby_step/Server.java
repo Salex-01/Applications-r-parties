@@ -8,7 +8,7 @@ public class Server extends Thread {
 	Socket s2 = null;
 	InputStream in = null;
 	OutputStream out = null;
-	String name = null;
+	String output = null;
 	String ServerName = "Serveur test";
 
 	public Server(int port) {
@@ -28,29 +28,10 @@ public class Server extends Thread {
 		while (true) {
 			try {
 				s2 = s.accept();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			try {
 				in = s2.getInputStream();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			try {
 				out = s2.getOutputStream();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			try {
-				name = new String(in.readNBytes((int) in.readNBytes(1)[0]));
-			} catch (NumberFormatException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			name = "Hello ".concat(name);
-			try {
-				out.write(name.getBytes());
+				output = "Hello ".concat(new String(in.readNBytes((int) in.readNBytes(1)[0])));
+				out.write(output.getBytes());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

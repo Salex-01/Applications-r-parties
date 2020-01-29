@@ -6,11 +6,9 @@ public class Main {
 
 	public static void main(String[] args) {
 		server= new Server(11799);
-		
 		server.start();
 		
 		client=new Client("test",server.getIP(),11799);
 		client.start();
-		
 	}
 }
