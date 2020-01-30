@@ -17,6 +17,7 @@ public class Server extends Thread {
 			s = new ServerSocket(port);
 		} catch (IOException e) {
 			e.printStackTrace();
+			System.exit(-1);
 		}
 	}
 	
@@ -47,6 +48,13 @@ public class Server extends Thread {
 				out.writeObject(content);
 			} catch (Exception e) {
 				e.printStackTrace();
+				if(!s2.isClosed()) {
+					try {
+						s2.close();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+				}
 			}
 		}
 	}
