@@ -9,11 +9,11 @@ import java.util.concurrent.Semaphore;
 public class Server extends Thread {
 	ServerSocket s = null;
 
-	int Nworks = 3;
-	ExecServer[] workers = new ExecServer[Nworks];
-	Semaphore ready = new Semaphore(Nworks);
+	int Nworks = 3;	//Nombre de Threads
+	ExecServer[] workers = new ExecServer[Nworks];	//Tableau de Threads
+	Semaphore ready = new Semaphore(Nworks);	//Semaphore s'assurer que les threads ont accès à la mémoire un par un
 
-	public Server(int port) throws IOException {
+	public Server(int port) throws IOException {	//Constructeur
 		s = new ServerSocket(port);
 		for (int i = 0; i < workers.length; i++) {
 			workers[i] = new ExecServer(this);
@@ -21,7 +21,7 @@ public class Server extends Thread {
 		}
 	}
 
-	public InetAddress getIP() {
+	public InetAddress getIP() {	
 		return s.getInetAddress();
 	}
 
@@ -32,15 +32,15 @@ public class Server extends Thread {
 		while (true) {
 			try {
 				s2 = s.accept();
-				ready.acquire();
-				while (!workers[i].isReady()) {
+				ready.acquire();	//Attend l'accès au sémaphore
+				while (!workers[i].isReady()) {	//Recherche un thread de libre
 					i++;
 					if (i >= Nworks) {
 						i = 0;
 					}
 				}
-				workers[i].affect(s2);
-				workers[i].go.release();
+				workers[i].affect(s2); //Affect la tache au thread
+				workers[i].go.release(); //Declenche le semaphore du worker pour effectuer sa tache
 				s2 = null;
 			} catch (InterruptedException e) {
 				e.printStackTrace();
