@@ -37,8 +37,10 @@ public class ExecServer extends Thread {
 	public void run() {
 		BufferedInputStream buffIS = null;
 		File f;
-		Object o = null;
+		Object o;
 		while (true) {
+			f = null;
+			o = null;
 			try {
 				try {
 					go.acquire();
