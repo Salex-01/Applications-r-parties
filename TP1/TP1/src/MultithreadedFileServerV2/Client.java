@@ -1,4 +1,4 @@
-package MultithreadedFileServer;
+package MultithreadedFileServerV2;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
