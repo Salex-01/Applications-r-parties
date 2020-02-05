@@ -16,15 +16,15 @@ public class ExecServer extends Thread {
 	ObjectOutputStream out = null;
 	LinkedList<String> names = null;
 	byte[][] content = null;
-	private boolean ready = true;	//Disponible ou non
-	Semaphore go = new Semaphore(0); //Semaphore attend le signal du serveur pour effectuer son code
+	private boolean ready = true; // Disponible ou non
+	Semaphore go = new Semaphore(0); // Semaphore attend le signal du serveur pour effectuer son code
 	Server parent;
 
 	public ExecServer(Server s) {
 		parent = s;
 	}
 
-	public boolean isReady() { 
+	public boolean isReady() {
 		return ready;
 	}
 
@@ -65,10 +65,10 @@ public class ExecServer extends Thread {
 					f = null;
 				}
 				out.writeObject(content);
-				socket.close(); //Ferme le socket
+				socket.close(); // Ferme le socket
 				socket = null;
 				ready = true;
-			} catch (IOException e) { //Traite les exeptions
+			} catch (IOException e) { // Traite les exeptions
 				e.printStackTrace();
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
@@ -79,13 +79,14 @@ public class ExecServer extends Thread {
 					socket.close();
 				} catch (IOException e1) {
 					e1.printStackTrace();
-				}catch(NullPointerException e1) {}
+				} catch (NullPointerException e1) {
+				}
 				try {
 					buffIS.close();
 				} catch (IOException e1) {
 				} catch (NullPointerException e1) {
 				}
-				parent.ready.release(); //Libere le semaphore du serveur
+				parent.ready.release(); // Libere le semaphore du serveur
 			}
 		}
 	}
