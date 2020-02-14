@@ -27,7 +27,7 @@ public class NioClient {
 	private Selector selector;
 
 	// ByteBuffer for outgoing messages
-	ByteBuffer outBuffer = ByteBuffer.allocate(128);
+	byte[] outBuffer;
 	// ByteBuffer for ingoing messages
 	ByteBuffer inBuffer = ByteBuffer.allocate(128);
 
@@ -36,12 +36,15 @@ public class NioClient {
 	byte[] digest;
 	int nloops;
 
+	Reader read;
+	Writer write;
+
 	/**
 	 * NIO client initialization
 	 * 
 	 * @param serverName: the server name
-	 * @param port: the server port
-	 * @param msg: the message to send to the server
+	 * @param port:       the server port
+	 * @param msg:        the message to send to the server
 	 * @throws IOException
 	 */
 	public NioClient(String serverName, int port, byte[] payload) throws IOException {
@@ -112,6 +115,8 @@ public class NioClient {
 		assert (sc == key.channel());
 		sc.finishConnect();
 		key.interestOps(SelectionKey.OP_READ);
+		read = new Reader(sc, key);
+		write = new Writer(sc, key);
 
 		// when connected, send a message to the server
 		digest = md5(first);
@@ -127,35 +132,8 @@ public class NioClient {
 		assert (this.scKey == key);
 		assert (sc == key.channel());
 
-		// Let's read the message
-		inBuffer = ByteBuffer.allocate(128);
-		int n = sc.read(inBuffer);
-		if (n == -1) {
-		    key.cancel();
-			sc.close(); 
-			return;
-		}
+		read.EtatReader();
 
-		byte[] data = new byte[inBuffer.position()+1];
-		inBuffer.rewind();
-		inBuffer.get(data);
-		data[data.length-1] = '&';
-		// Let's make sure we read the message we sent to the server
-		byte[] md5 = md5(data);
-		if (!md5check(digest, md5))
-			System.out.println("Checksum Error!");
-
-		// Let's print the message we received, assuming it is a string
-		// in UTF-8 encoding, since it is the format of our first message
-		// we sent to the server.
-		String msg = new String(data, Charset.forName("UTF-8"));
-		System.out.println("NioClient received msg["+nloops+"]: " + msg);
-
-		nloops++;
-		if (true ) {//nloops < 100) {
-			// send back the received message
-			send(data, 0, data.length);
-		}
 	}
 
 	/**
@@ -166,8 +144,11 @@ public class NioClient {
 	private void handleWrite(SelectionKey key) throws IOException {
 		assert (this.scKey == key);
 		assert (sc == key.channel());
-		// write the output buffer to the socket channel
-		sc.write(outBuffer);
+
+		if (!write.set) {
+			write.setMessage(outBuffer);
+		}
+		write.EtatWriter();
 		// remove the write interest
 		key.interestOps(SelectionKey.OP_READ);
 	}
@@ -179,7 +160,7 @@ public class NioClient {
 	 */
 	public void send(byte[] data, int offset, int count) {
 		// this is not optimized at all, we should try to reuse the same ByteBuffer
-		outBuffer = ByteBuffer.wrap(data, offset, count);
+		outBuffer = data;
 
 		// register a write interests to know when there is room to write
 		// in the socket channel.
