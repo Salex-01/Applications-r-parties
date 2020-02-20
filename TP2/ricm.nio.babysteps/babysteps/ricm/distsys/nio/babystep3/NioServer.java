@@ -1,4 +1,4 @@
-package ricm.distsys.nio.babystep2;
+package ricm.distsys.nio.babystep3;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -9,7 +9,10 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * NIO elementary server RICM4 TP F. Boyer
@@ -26,8 +29,7 @@ public class NioServer {
 	// Unblocking selector
 	private Selector selector;
 
-	Reader read;
-	Writer write;
+	private Map<SocketChannel, IOGroup> groups = new HashMap<SocketChannel, IOGroup>();
 
 	/**
 	 * NIO server initialization
@@ -96,8 +98,7 @@ public class NioServer {
 		sc = ssc.accept();
 		sc.configureBlocking(false);
 
-		read = new Reader(sc, key);
-		write = new Writer(sc);
+		groups.put(sc, new IOGroup(new Writer(sc), new Reader(sc)));
 
 		// register the read interest for the new socket channel
 		// in order to know when there are bytes to read
@@ -123,10 +124,13 @@ public class NioServer {
 		assert (sscKey != key);
 		assert (ssc != key.channel());
 
+		IOGroup io = groups.get(key.channel());
+
 		try {
-			String res = read.execReader();
+			String res = io.read.execReader();
 			if (res != null) {
-				write.setMessage(res.getBytes());
+				System.out.println(res);
+				io.write.setMessage(res.getBytes());
 				key.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
 			}
 		} catch (IOException e) {
@@ -142,15 +146,17 @@ public class NioServer {
 	private void handleWrite(SelectionKey key) throws IOException {
 		assert (sscKey != key);
 		assert (ssc != key.channel());
-		
+
+		IOGroup io = groups.get(key.channel());
+
 		try {
-			if (write.set) {
-				if (write.execWriter()) {
+			if (io.write.set) {
+				if (io.write.execWriter()) {
 					key.interestOps(SelectionKey.OP_READ);
 				}
 			}
 		} catch (IOException e) {
-			System.out.println("Erreur IO");
+			System.out.println("Client déconnecté/Erreur IO");
 		}
 
 	}
