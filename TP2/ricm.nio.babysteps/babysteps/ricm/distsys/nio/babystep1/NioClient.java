@@ -45,7 +45,7 @@ public class NioClient {
 	 * @throws IOException
 	 */
 	public NioClient(String serverName, int port, byte[] payload) throws IOException {
-
+		
 		this.first = payload;
 
 		// create a new selector

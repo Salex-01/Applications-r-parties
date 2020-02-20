@@ -14,24 +14,24 @@ public class Reader {
 	};
 
 	State etat;
-	byte[] data;
 
 	ByteBuffer lenBuf = ByteBuffer.allocate(4);
-	
+
 	SocketChannel socket;
 	SelectionKey key;
 	int bytesToRead;
-	int byteRead;
+	int bytesRead;
 
 	public Reader(SocketChannel socket1, SelectionKey key1) {
 		etat = State.LGMESS;
 		socket = socket1;
 		key = key1;
 		bytesToRead = 0;
-		byteRead = 0;
+		bytesRead = 0;
+		lenBuf.rewind();
 	}
 
-	public String EtatReader() throws IOException {
+	public String execReader() throws IOException {
 		switch (etat) {
 		case LGMESS:
 			int res = socket.read(lenBuf);
@@ -40,13 +40,13 @@ public class Reader {
 				socket.close();
 				return null;
 			}
-			byteRead += res;
-			if (byteRead == 4) {
+			bytesRead += res;
+			if (bytesRead == 4) {
 				lenBuf.rewind();
 				bytesToRead = lenBuf.getInt();
 				etat = State.READMESS;
-				res=0;
-				byteRead=0;
+				res = 0;
+				bytesRead = 0;
 			} else {
 				return null;
 			}
@@ -58,14 +58,14 @@ public class Reader {
 				socket.close();
 				return null;
 			}
-			byteRead+=res;
-			if(byteRead==bytesToRead){
+			bytesRead += res;
+			if (bytesRead == bytesToRead) {
+				bytesRead = 0;
+				bytesToRead = 0;
+				lenBuf.rewind();
 				dataBuf.rewind();
-				data=new byte[bytesToRead];
-				dataBuf.get(data);
-				String msg= new String(data, Charset.forName("UTF-8"));
-				System.out.println(msg);
-				etat=State.LGMESS;
+				String msg = new String(dataBuf.array(), Charset.forName("UTF-8"));
+				etat = State.LGMESS;
 				return msg;
 			}
 		default:

@@ -1,7 +1,6 @@
 package ricm.distsys.nio.babystep2;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -11,6 +10,7 @@ import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
+import java.util.Arrays;
 import java.util.Iterator;
 
 /**
@@ -20,11 +20,11 @@ import java.util.Iterator;
 public class NioClient {
 
 	// The channel used to communicate with the server
-	private SocketChannel sc;
+	private static SocketChannel sc;
 	private SelectionKey scKey;
 
 	// Java NIO selector
-	private Selector selector;
+	static private Selector selector;
 
 	// ByteBuffer for outgoing messages
 	byte[] outBuffer;
@@ -32,12 +32,11 @@ public class NioClient {
 	ByteBuffer inBuffer = ByteBuffer.allocate(128);
 
 	// The message to send to the server
-	byte[] first;
-	byte[] digest;
+	static byte[] digest;
 	int nloops;
 
-	Reader read;
-	Writer write;
+	static Reader read;
+	static Writer write;
 
 	/**
 	 * NIO client initialization
@@ -47,9 +46,7 @@ public class NioClient {
 	 * @param msg:        the message to send to the server
 	 * @throws IOException
 	 */
-	public NioClient(String serverName, int port, byte[] payload) throws IOException {
-
-		this.first = payload;
+	public NioClient(String serverName, int port) throws IOException {
 
 		// create a new selector
 		selector = SelectorProvider.provider().openSelector();
@@ -63,8 +60,7 @@ public class NioClient {
 		scKey = sc.register(selector, SelectionKey.OP_CONNECT);
 
 		// request a connection to the given server and port
-		InetAddress addr;
-		addr = InetAddress.getByName(serverName);
+		InetAddress addr = InetAddress.getByName(serverName);
 		sc.connect(new InetSocketAddress(addr, port));
 	}
 
@@ -78,7 +74,7 @@ public class NioClient {
 			selector.select();
 
 			// get the keys for which an event occurred
-			Iterator<?> selectedKeys = this.selector.selectedKeys().iterator();
+			Iterator<?> selectedKeys = selector.selectedKeys().iterator();
 			while (selectedKeys.hasNext()) {
 				SelectionKey key = (SelectionKey) selectedKeys.next();
 				// process key's events
@@ -114,13 +110,8 @@ public class NioClient {
 		assert (this.scKey == key);
 		assert (sc == key.channel());
 		sc.finishConnect();
-		key.interestOps(SelectionKey.OP_READ);
+		key.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
 		read = new Reader(sc, key);
-		write = new Writer(sc, key);
-
-		// when connected, send a message to the server
-		digest = md5(first);
-		send(first, 0, first.length);
 	}
 
 	/**
@@ -132,7 +123,16 @@ public class NioClient {
 		assert (this.scKey == key);
 		assert (sc == key.channel());
 
-		read.EtatReader();
+		String result = read.execReader();
+		if (result != null) {
+			assert (Arrays.equals(md5(result.getBytes()), digest));
+			System.out.println(result);
+			System.out.println("Longueur de la chaine lue : " + result.length());
+			result = result + "&";
+			write.setMessage(result.getBytes());
+			digest = md5(result.getBytes());
+			key.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+		}
 
 	}
 
@@ -145,27 +145,10 @@ public class NioClient {
 		assert (this.scKey == key);
 		assert (sc == key.channel());
 
-		if (!write.set) {
-			write.setMessage(outBuffer);
+		if (write.execWriter()) {
+			key.interestOps(SelectionKey.OP_READ);
 		}
-		write.EtatWriter();
-		// remove the write interest
-		key.interestOps(SelectionKey.OP_READ);
-	}
 
-	/**
-	 * Send the given data
-	 * 
-	 * @param data: the byte array that should be sent
-	 */
-	public void send(byte[] data, int offset, int count) {
-		// this is not optimized at all, we should try to reuse the same ByteBuffer
-		outBuffer = data;
-
-		// register a write interests to know when there is room to write
-		// in the socket channel.
-		SelectionKey key = sc.keyFor(selector);
-		key.interestOps(SelectionKey.OP_WRITE);
 	}
 
 	public static void main(String args[]) throws IOException {
@@ -186,8 +169,10 @@ public class NioClient {
 			}
 		}
 		byte[] bytes = msg.getBytes(Charset.forName("UTF-8"));
-		NioClient nc;
-		nc = new NioClient(serverAddress, serverPort, bytes);
+		NioClient nc = new NioClient(serverAddress, serverPort);
+		write = new Writer(sc);
+		write.setMessage(bytes);
+		digest = md5(bytes);
 		nc.loop();
 	}
 
@@ -210,21 +195,6 @@ public class NioClient {
 			throw new IOException(ex);
 		}
 		return digest;
-	}
-
-	public static boolean md5check(byte[] d1, byte[] d2) {
-		if (d1.length != d2.length)
-			return false;
-		for (int i = 0; i < d1.length; i++)
-			if (d1[i] != d2[i])
-				return false;
-		return true;
-	}
-
-	public static void echo(PrintStream ps, byte[] digest) {
-		for (int i = 0; i < digest.length; i++)
-			ps.print(digest[i] + ", ");
-		ps.println();
 	}
 
 }

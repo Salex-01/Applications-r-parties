@@ -9,7 +9,6 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
-import java.nio.charset.Charset;
 import java.util.Iterator;
 
 /**
@@ -70,7 +69,6 @@ public class NioServer {
 			while (selectedKeys.hasNext()) {
 
 				SelectionKey key = (SelectionKey) selectedKeys.next();
-				selectedKeys.remove();
 				if (key.isValid() && key.isAcceptable())
 					handleAccept(key);
 				if (key.isValid() && key.isReadable())
@@ -79,6 +77,7 @@ public class NioServer {
 					handleWrite(key);
 				if (key.isValid() && key.isConnectable())
 					handleConnect(key);
+				selectedKeys.remove();
 			}
 		}
 	}
@@ -98,7 +97,7 @@ public class NioServer {
 		sc.configureBlocking(false);
 
 		read = new Reader(sc, key);
-		write = new Writer(sc, key);
+		write = new Writer(sc);
 
 		// register the read interest for the new socket channel
 		// in order to know when there are bytes to read
@@ -124,32 +123,14 @@ public class NioServer {
 		assert (sscKey != key);
 		assert (ssc != key.channel());
 
-		read.EtatReader();
-
-		// get the socket channel for the client who sent something
-//		SocketChannel sc = (SocketChannel) key.channel();
-//
-//		ByteBuffer inBuffer = ByteBuffer.allocate(128);
-//		int n = sc.read(inBuffer);
-//		if (n == -1) {
-//		    key.cancel();
-//			sc.close(); 
-//			return;
-//		}
-//
-//		// process the received data
-//		byte[] data = new byte[inBuffer.position()];
-//		inBuffer.rewind();
-//		inBuffer.get(data,0,data.length);
-//
-//		String msg = new String(data,Charset.forName("UTF-8"));
-//		System.out.println("NioServer received: " + msg);
-
-		// echo back the same message to the client
-		// send(sc, data, 0, data.length);
-		String res = read.EtatReader();
-		if (res != null) {
-			write.setMessage(res.getBytes());
+		try {
+			String res = read.execReader();
+			if (res != null) {
+				write.setMessage(res.getBytes());
+				key.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+			}
+		} catch (IOException e) {
+			System.out.println("Erreur IO");
 		}
 	}
 
@@ -161,36 +142,17 @@ public class NioServer {
 	private void handleWrite(SelectionKey key) throws IOException {
 		assert (sscKey != key);
 		assert (ssc != key.channel());
-
-		// get the socket channel for the client to whom we
-		// need to send something
-//		SocketChannel sc = (SocketChannel) key.channel();
-//
-//		// get back the buffer that we must send
-//		ByteBuffer buffer = (ByteBuffer) key.attachment();
-//		sc.write(buffer);
-
-		if (write.set) {
-			write.EtatWriter();
+		
+		try {
+			if (write.set) {
+				if (write.execWriter()) {
+					key.interestOps(SelectionKey.OP_READ);
+				}
+			}
+		} catch (IOException e) {
+			System.out.println("Erreur IO");
 		}
 
-		key.interestOps(SelectionKey.OP_READ);
-	}
-
-	/**
-	 * Send data
-	 * 
-	 * @param the key of the channel on which data that should be sent
-	 * @param the data that should be sent
-	 */
-	public void send(SocketChannel sc, byte[] data, int offset, int count) {
-		ByteBuffer buf;
-		buf = ByteBuffer.wrap(data, offset, count);
-
-		// register a write interest for the given client socket channel
-		SelectionKey key = sc.keyFor(selector);
-		key.interestOps(SelectionKey.OP_WRITE);
-		key.attach(buf);
 	}
 
 	public static void main(String args[]) throws IOException {
@@ -203,8 +165,7 @@ public class NioServer {
 				serverPort = new Integer(args[++i]).intValue();
 			}
 		}
-		NioServer ns;
-		ns = new NioServer(serverPort);
+		NioServer ns = new NioServer(serverPort);
 		ns.loop();
 	}
 

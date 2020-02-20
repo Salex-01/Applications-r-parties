@@ -15,49 +15,47 @@ public class Writer {
 	byte[] data;
 
 	SocketChannel socket;
-	SelectionKey key;
 
 	int bytesWrite;
 
 	ByteBuffer dataBuff;
 	ByteBuffer lenBuff = ByteBuffer.allocate(4);
-	
-	public boolean set=false;
 
-	public Writer(SocketChannel socket1, SelectionKey key1) {
+	public boolean set = false;
+
+	public Writer(SocketChannel socket1) {
 		etat = State.LGMESS;
 		socket = socket1;
-		key = key1;
 		bytesWrite = 0;
 	}
 
-	public void EtatWriter() throws IOException {
+	public boolean execWriter() throws IOException {
 		switch (etat) {
 		case LGMESS:
 			socket.write(lenBuff);
 			if (lenBuff.remaining() == 0) {
 				etat = State.WRITEMESS;
-				return;
 			} else {
-				return;
+				return false;
 			}
 		case WRITEMESS:
 			socket.write(dataBuff);
 			if (dataBuff.remaining() == 0) {
 				etat = State.LGMESS;
 				set = false;
-				return;
-			} else {
-				return;
+				return true;
 			}
+			break;
 		default:
 		}
+		return false;
 	}
 
 	public void setMessage(byte[] data) {
 		dataBuff = ByteBuffer.wrap(data, 0, data.length);
 		lenBuff.position(0);
 		lenBuff.putInt(data.length);
-		set=true;
+		lenBuff.rewind();
+		set = true;
 	}
 }
