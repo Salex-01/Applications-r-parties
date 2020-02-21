@@ -10,7 +10,7 @@ package ricm.channels;
  */
 public interface IBroker {
 
-	/*
+	/**
 	 * Set a listener to be notified when 
 	 *   - a connect succeeds or fails
 	 *   - a connection is accepted
@@ -37,6 +37,5 @@ public interface IBroker {
 	 * @return true if the accept was put in place,
 	 *         false otherwise.
 	 */
-	boolean accept(int port);
-	
+	boolean accept(int port);	
 }
