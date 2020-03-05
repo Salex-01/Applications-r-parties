@@ -4,6 +4,5 @@
 	<classpathentry kind="src" path="basic"/>
 	<classpathentry kind="src" path="threaded"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/ricm.channels"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ricm.channels.impl.nio.solved"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

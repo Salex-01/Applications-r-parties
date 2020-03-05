@@ -1,5 +1,7 @@
 package ricm.channels;
 
+import java.io.IOException;
+
 /**
  * Main interface to the broker.
  * The broker allows a process to connect to another process,
@@ -26,8 +28,9 @@ public interface IBroker {
 	 * @param port
 	 * @return true if the connection was attempted,
 	 *         false otherwise.
+	 * @throws IOException 
 	 */
-	boolean connect(String host, int port);
+	boolean connect(String host, int port) throws IOException;
 
 	/**
 	 * Request to accept connections onto the given port.
@@ -36,6 +39,7 @@ public interface IBroker {
 	 * @param port
 	 * @return true if the accept was put in place,
 	 *         false otherwise.
+	 * @throws IOException 
 	 */
-	boolean accept(int port);	
+	boolean accept(int port) throws IOException;	
 }
