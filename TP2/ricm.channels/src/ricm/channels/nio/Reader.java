@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
-import java.nio.charset.Charset;
 
 public class Reader {
 
@@ -29,7 +28,7 @@ public class Reader {
 		lenBuf.rewind();
 	}
 
-	public String execReader() throws IOException {
+	public byte[] execReader() throws IOException {
 		switch (etat) {
 		case LGMESS:
 			int res = socket.read(lenBuf);
@@ -60,9 +59,8 @@ public class Reader {
 				bytesToRead = 0;
 				lenBuf.rewind();
 				dataBuf.rewind();
-				String msg = new String(dataBuf.array(), Charset.forName("UTF-8"));
 				etat = State.LGMESS;
-				return msg;
+				return dataBuf.array();
 			}
 		default:
 		}

@@ -6,6 +6,7 @@ public class ClientMain {
 
 	public static final int DEFAULT_SERVER_PORT = 8888;
 	
+	@SuppressWarnings("deprecation")
 	public static void main(String args[]) throws Exception {
 		String filename = ".project";
 		String hostname = "localhost";

@@ -7,6 +7,7 @@ public class ServerMain {
 	public static final int DEFAULT_SERVER_PORT = 8888;
 	public static final String DEFAULT_FOLDER = ".";
 
+	@SuppressWarnings("deprecation")
 	public static void main(String args[]) throws Exception {
 		int port = DEFAULT_SERVER_PORT;
 		String folder = DEFAULT_FOLDER;
