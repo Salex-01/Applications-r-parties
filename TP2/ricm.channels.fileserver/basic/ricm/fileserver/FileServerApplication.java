@@ -49,7 +49,7 @@ public class FileServerApplication implements IBrokerListener, IChannelListener 
 		File f = new File(folder + filename);
 		if (!f.exists() || !f.isFile())
 			return null;
-		byte[] bytes;
+		byte[] bytes = null;
 		int nbytes = (int) f.length();
 		try {
 			FileInputStream fis;
@@ -57,10 +57,8 @@ public class FileServerApplication implements IBrokerListener, IChannelListener 
 			try {
 				bytes = new byte[nbytes];
 				for (int nread = 0; nread < f.length();) {
-					int r;
 					try {
-						r = fis.read(bytes, nread, nbytes - nread);
-						nread += r;
+						nread += fis.read(bytes, nread, nbytes - nread);
 					} catch (IOException e) {
 						return null;
 					}

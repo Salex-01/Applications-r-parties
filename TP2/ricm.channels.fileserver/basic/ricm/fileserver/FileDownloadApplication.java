@@ -75,7 +75,7 @@ public class FileDownloadApplication implements IBrokerListener, IChannelListene
 		try {
 			int nbytes = dis.readInt();
 			if (nbytes < 0)
-				System.out.println("Server returns an error code: " + nbytes);
+				System.out.println("Server returned an error code: " + nbytes);
 			else {
 				System.out.println("Download " + nbytes + " bytes");
 				byte[] bytes = new byte[nbytes];
