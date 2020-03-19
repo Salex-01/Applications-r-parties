@@ -13,7 +13,7 @@ public interface IChatRoom extends Remote {
 	/*
 	 * allows a participant to leave a chat room
 	 */
-	void leave(String name) throws RemoteException;
+	void leave(IParticipant p) throws RemoteException;
 
 	/*
 	 * allows a participant to send a message to a given chat room

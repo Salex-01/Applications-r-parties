@@ -25,8 +25,8 @@ public class ChatRoom extends UnicastRemoteObject implements IChatRoom {
 		clients.put(p.name(), p);
 	}
 
-	public void leave(String n) throws RemoteException {
-		clients.remove(n);
+	public void leave(IParticipant p) throws RemoteException {
+		clients.remove(p.name());
 	}
 
 	public void say(IParticipant p, String message) throws RemoteException {
