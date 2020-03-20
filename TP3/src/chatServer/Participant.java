@@ -10,8 +10,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 
 public class Participant extends UnicastRemoteObject implements IParticipant {
 	protected Participant() throws RemoteException {
@@ -84,7 +84,6 @@ public class Participant extends UnicastRemoteObject implements IParticipant {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	void run() throws NotBoundException, IOException {
 		System.out.println("What's your name ?");
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
@@ -133,9 +132,9 @@ public class Participant extends UnicastRemoteObject implements IParticipant {
 					}
 					break;
 				case "stop":
-					Entry<String, IChatRoom>[] ccr = (Entry<String, IChatRoom>[]) rooms.entrySet().toArray();
-					for (int i = 0; i < ccr.length; i++) {
-						ccr[i].getValue().leave(this);
+					Iterator<String> i = rooms.keySet().iterator();
+					while(i.hasNext()) {
+						leave(i.next());
 					}
 					System.exit(0);
 					break;
