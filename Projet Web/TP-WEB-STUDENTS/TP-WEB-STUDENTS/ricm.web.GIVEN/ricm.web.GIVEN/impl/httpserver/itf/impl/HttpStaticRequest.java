@@ -25,8 +25,6 @@ public class HttpStaticRequest extends HttpRequest {
 		
 		if(file.exists()) {
 			
-		
-			
 			resp.setReplyOk();
 			resp.setContentLength((int)file.length());
 			resp.setContentType(getContentType(m_ressname));
@@ -34,7 +32,7 @@ public class HttpStaticRequest extends HttpRequest {
 			PrintStream ps = resp.beginBody();
 			FileInputStream flux = new FileInputStream(file);
 			
-			ps.print(flux.readAllBytes());
+			ps.write(flux.readAllBytes());
 			flux.close();
 			
 			ps.flush();
