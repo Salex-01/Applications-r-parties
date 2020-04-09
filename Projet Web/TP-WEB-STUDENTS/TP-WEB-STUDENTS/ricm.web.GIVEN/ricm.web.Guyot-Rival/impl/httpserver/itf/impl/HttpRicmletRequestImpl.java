@@ -3,7 +3,6 @@ package httpserver.itf.impl;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.StringTokenizer;
 
 import httpserver.itf.HttpResponse;
 import httpserver.itf.HttpRicmlet;

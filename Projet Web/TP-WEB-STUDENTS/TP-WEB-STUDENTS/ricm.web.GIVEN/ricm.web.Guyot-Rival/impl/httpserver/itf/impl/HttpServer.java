@@ -8,8 +8,6 @@ import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.StringTokenizer;
 
 import httpserver.itf.HttpRequest;
 import httpserver.itf.HttpResponse;

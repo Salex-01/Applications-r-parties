@@ -15,6 +15,7 @@ public class CountBySessionRicmlet implements httpserver.itf.HttpRicmlet{
 	/*
 	 * Print the number of time this ricmlet has been invoked per user session
 	 */
+	@SuppressWarnings("deprecation")
 	@Override
 	public void doGet(HttpRicmletRequest req,  HttpRicmletResponse resp) throws IOException {
 		HttpSession s = req.getSession();
