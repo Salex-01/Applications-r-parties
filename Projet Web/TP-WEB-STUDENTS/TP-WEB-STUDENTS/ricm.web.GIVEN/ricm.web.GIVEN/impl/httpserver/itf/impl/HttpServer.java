@@ -7,12 +7,13 @@ import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.StringTokenizer;
 
 import httpserver.itf.HttpRequest;
 import httpserver.itf.HttpResponse;
 import httpserver.itf.HttpRicmlet;
-
 
 /**
  * Basic Http Server Implementation
@@ -28,6 +29,9 @@ public class HttpServer {
 	private int m_port;
 	private File m_folder;
 	private ServerSocket m_ssoc;
+
+	HashMap<String, Session> sessions = new HashMap<String, Session>();
+	HashMap<String, HttpRicmlet> activeRicmlets = new HashMap<String, HttpRicmlet>();
 
 	protected HttpServer(int port, String folderName) {
 		m_port = port;
@@ -73,17 +77,22 @@ public class HttpServer {
 		String line = null;
 		HttpRequest request = null;
 		line = br.readLine();
-		StringTokenizer parse = new StringTokenizer(line);
-		String method = parse.nextToken().toUpperCase();
-		String ressname = parse.nextToken();
+		if(line==null) {
+			System.err.println("Received a null request. Skipping.");
+			throw new IOException("Null request");
+		}
+		String[] tokens = line.split(" ");
+		String method = tokens[0].toUpperCase();
+		String ressname = tokens[1];
 		if (method.equals("GET")) {
 			if (ressname.contains("ricmlets")) {
-				request = new HttpRicmletRequestImpl(this, method, ressname);
+				request = new HttpRicmletRequestImpl(this, method, ressname, br);
 			} else {
 				request = new HttpStaticRequest(this, method, ressname);
 			}
-		} else
+		} else {
 			request = new UnknownRequest(this, method, ressname);
+		}
 		return request;
 	}
 
@@ -91,11 +100,10 @@ public class HttpServer {
 	 * Returns an HttpResponse object corresponding the the given HttpRequest object
 	 */
 	public HttpResponse getResponse(HttpRequest req, PrintStream ps) {
-		if(req instanceof HttpStaticRequest) {
+		if (req instanceof HttpStaticRequest) {
 			return new HttpResponseImpl(this, req, ps);
-		}
-		else {
-			return new HttpRicmletResponseImpl(this,req,ps);
+		} else {
+			return new HttpRicmletResponseImpl(this, req, ps);
 		}
 	}
 
@@ -107,6 +115,9 @@ public class HttpServer {
 			port = Integer.parseInt(args[0]);
 			String foldername = args[1];
 			HttpServer hs = new HttpServer(port, foldername);
+			AgingThread at = new AgingThread();
+			at.setSessions(hs.sessions);
+			at.start();
 			hs.loop();
 		}
 	}

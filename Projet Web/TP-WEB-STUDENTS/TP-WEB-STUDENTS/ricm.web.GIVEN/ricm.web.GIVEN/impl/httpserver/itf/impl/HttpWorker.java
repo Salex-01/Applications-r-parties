@@ -20,6 +20,7 @@ public class HttpWorker extends Thread {
 		m_soc = soc;
 	}
 	
+	@Override
 	public void run() {
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(m_soc.getInputStream()));
